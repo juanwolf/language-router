@@ -44,43 +44,16 @@ func languageHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, ROOT_PATH + langAsked)
 }
 
-func stylesheetsHandler (w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Stylesheet request detected")
-	vars := mux.Vars(r)
-	fileWanted := vars["fileWanted"]
-	http.ServeFile(w, r, ROOT_PATH + "stylesheets/" + fileWanted)
-}
-
-func fontsHandler (w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Stylesheet request detected")
-	vars := mux.Vars(r)
-	fileWanted := vars["fileWanted"]
-	http.ServeFile(w, r, ROOT_PATH + "stylesheets/fonts/" + fileWanted)
-}
-
-func jsHandler (w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Stylesheet request detected")
-	vars := mux.Vars(r)
-	fileWanted := vars["fileWanted"]
-	http.ServeFile(w, r, ROOT_PATH + "js/" + fileWanted)
-	fmt.Println("File wanted ", fileWanted, "path: ", ROOT_PATH + "js/" + fileWanted)
-}
-
-func jslibHandler (w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Stylesheet request detected")
-	vars := mux.Vars(r)
-	fileWanted := vars["fileWanted"]
-	http.ServeFile(w, r, ROOT_PATH + "js/lib/" + fileWanted)
-	fmt.Println("File wanted ", fileWanted, "path: ", ROOT_PATH + "js/" + fileWanted)
-}
-
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", rootHandler)
-	router.HandleFunc("/stylesheets/{fileWanted}", stylesheetsHandler)
-	router.HandleFunc("/stylesheets/fonts/{fileWanted}", fontsHandler)
-	router.HandleFunc("/js/{fileWanted}", jsHandler)
-	router.HandleFunc("/js/lib/{fileWanted}", jslibHandler)
+	// Static css files
+	router.PathPrefix("/stylesheets/").Handler(http.StripPrefix("/stylesheets/",
+		http.FileServer(http.Dir(ROOT_PATH + "stylesheets/"))))
+	// Static js files
+	router.PathPrefix("/js/").Handler(http.StripPrefix("/js/",
+		http.FileServer(http.Dir(ROOT_PATH + "js/"))))
+	// Language management
 	router.HandleFunc("/{lang}/", languageHandler)
 
 	http.Handle("/", router)
