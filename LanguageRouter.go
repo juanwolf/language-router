@@ -2,23 +2,48 @@ package main
 
 import ("log"
 	"net/http"
+	"github.com/gorilla/mux"
+	"fmt"
+	"strings"
 )
 
-// The Root path of your static files
-var ROOT_PATH = "/home/juanwolf/Documents/Devel/juanwolf.fr/"
+// Path to the static files
+const(
+	ROOT_PATH = "/home/juanwolf/Documents/Devel/juanwolf.fr/"
+	EN_DIR = "en/"
+	ES_DIR = "es/"
+	FR_DIR = "fr/"
+)
 
-// Setup here what language you want to use.
+var languageMap map[string]string
+
 var LANG_DEFAULT_DIR = EN_DIR
-var EN_DIR = "en/"
-var FR_DIR = "fr/"
-var ES_DIR = "es/"
+var language_detected  =  LANG_DEFAULT_DIR
 
-var language_detected string
+
+func languageDetection() {
+
+
+}
+
+func languageHandler(w http.ResponseWriter, r *http.Request) {
+	header := r.Header
+	languagesRequest := header.Get("Accept-Language")
+	fmt.Println("Accept-Language: ", languagesRequest)
+	languages := strings.Split(languagesRequest, ",")
+	fmt.Println(languages)
+	language_detected = strings.Split(languages[0], "-")[0]
+	fmt.Println("Language detected", language_detected)
+	language_directory := language_detected + "/"
+	r.URL.Path += language_directory
+	http.ServeFile(w, r, ROOT_PATH + language_directory)
+}
 
 func main() {
-	language_detected = LANG_DEFAULT_DIR
-	http.Handle("/" , http.StripPrefix("/",
-			http.FileServer(http.Dir(ROOT_PATH))))
+	router := mux.NewRouter()
+	router.HandleFunc("/", languageHandler)
+	http.Handle("/", router)
+
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
