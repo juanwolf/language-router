@@ -12,6 +12,8 @@ import (
 
 // Path to the static files
 const (
+	DOMAIN 			 = "localhost"
+	PORT    		 = "8080"
 	ROOT_PATH        = "/home/juanwolf/Documents/Devel/juanwolf.fr/"
 	LANG_DEFAULT 	 = "en"
 )
@@ -42,16 +44,31 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Accept-Language: ", languagesRequest)
 	languages := strings.Split(languagesRequest, ",")
 	fmt.Println(languages)
-	language_detected := strings.Split(languages[0], "-")[0]
-	fmt.Println("Language detected", language_detected)
-	language_directory := language_detected + "/"
-	http.Redirect(w, r, r.URL.Path+language_directory, http.StatusFound)
+	for _, language := range languages {
+		language_without_quality := strings.Split(language, ";")[0]
+		language_detected := strings.Split(language_without_quality, "-")[0]
+		fmt.Println("Language detected", language_detected)
+		if languageMap[language_detected] != "" {
+			language_directory := language_detected + "/"
+			http.Redirect(w, r, r.URL.Path+language_directory, http.StatusFound)
+			return
+		}
+	}
+	http.Redirect(w, r, r.URL.Path + LANG_DEFAULT + "/", http.StatusFound)
 }
 
 func languageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	langAsked := vars["lang"]
-	http.ServeFile(w, r, ROOT_PATH+langAsked)
+	/*if languageMap[langAsked] == "" {
+		fmt.Println("Preferred language not available")
+		newURL := strings.TrimSuffix(r.URL.Path, langAsked + "/")
+		langAsked = LANG_DEFAULT
+		fmt.Println("Redirect to: ", newURL + langAsked)
+		http.Redirect(w, r, newURL + langAsked + "/", http.StatusFound)
+	} else {*/
+		http.ServeFile(w, r, languageMap[langAsked])
+	//}
 }
 
 func main() {
@@ -60,10 +77,10 @@ func main() {
 	router.HandleFunc("/", rootHandler)
 	// Static css files
 	router.PathPrefix("/stylesheets/").Handler(http.StripPrefix("/stylesheets/",
-		http.FileServer(http.Dir(ROOT_PATH+"stylesheets/"))))
+		http.FileServer(http.Dir(ROOT_PATH + "stylesheets/"))))
 	// Static js files
 	router.PathPrefix("/js/").Handler(http.StripPrefix("/js/",
-		http.FileServer(http.Dir(ROOT_PATH+"js/"))))
+		http.FileServer(http.Dir(ROOT_PATH + "js/"))))
 	// Language management
 	router.HandleFunc("/{lang}/", languageHandler)
 
