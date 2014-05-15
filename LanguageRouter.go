@@ -12,8 +12,8 @@ import (
 
 // Path to the static files
 const (
-	DOMAIN 			 = "localhost"
-	PORT    		 = "8080"
+	HOST             = "juanwolf.fr"
+	PORT    		 = ":8080"
 	ROOT_PATH        = "/home/juanwolf/Documents/Devel/juanwolf.fr/"
 	LANG_DEFAULT 	 = "en"
 )
@@ -50,6 +50,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Language detected", language_detected)
 		if languageMap[language_detected] != "" {
 			language_directory := language_detected + "/"
+			fmt.Println("url asked: " + r.URL.Path)
 			http.Redirect(w, r, r.URL.Path+language_directory, http.StatusFound)
 			return
 		}
@@ -60,20 +61,23 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 func languageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	langAsked := vars["lang"]
-	/*if languageMap[langAsked] == "" {
-		fmt.Println("Preferred language not available")
-		newURL := strings.TrimSuffix(r.URL.Path, langAsked + "/")
-		langAsked = LANG_DEFAULT
-		fmt.Println("Redirect to: ", newURL + langAsked)
-		http.Redirect(w, r, newURL + langAsked + "/", http.StatusFound)
-	} else {*/
-		http.ServeFile(w, r, languageMap[langAsked])
-	//}
+	http.ServeFile(w, r, languageMap[langAsked])
+}
+
+func resumeHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	langAsked := vars["lang"]
+	fmt.Println("Finding the resume in " + languageMap[langAsked])
+	http.ServeFile(w, r, languageMap[langAsked] + "/" + "resume.html")
 }
 
 func main() {
 	serverLanguageAvailable()
 	router := mux.NewRouter()
+	router.Host(HOST).Schemes("http")
+	subrouter := router.Host("resume." + HOST).Subrouter()
+	subrouter.HandleFunc("/", rootHandler)
+	subrouter.HandleFunc("/{lang}/", resumeHandler)
 	router.HandleFunc("/", rootHandler)
 	// Static css files
 	router.PathPrefix("/stylesheets/").Handler(http.StripPrefix("/stylesheets/",
@@ -83,10 +87,10 @@ func main() {
 		http.FileServer(http.Dir(ROOT_PATH + "js/"))))
 	// Language management
 	router.HandleFunc("/{lang}/", languageHandler)
+	// Subrouter for resumes
 
 	http.Handle("/", router)
-
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(PORT, nil); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
