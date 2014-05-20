@@ -1,30 +1,4 @@
-# README #
+# Language Router #
 
-This README would normally document whatever steps are necessary to get your application up and running.
 Language router is a little router written in Go. It will give you the possibility to create static page (html/css/js) without think about how to manage it. 
 
-### What is this repository for? ###
-
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
-
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
