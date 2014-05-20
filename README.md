@@ -1,4 +1,3 @@
 # Language Router #
 
-Language router is a little router written in Go. It will give you the possibility to create static page (html/css/js) without think about how to manage it. 
-
+Language router is a little router written in Go. It will detects the language preference of the incoming connection and redirect it to the good page.
