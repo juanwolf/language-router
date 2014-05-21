@@ -16,6 +16,8 @@ const (
 	PORT    		 = ":9001"
 	ROOT_PATH        = "/home/juanwolf/Documents/Devel/juanwolf.fr/"
 	LANG_DEFAULT 	 = "en"
+	COOKIE_NAME  	 = "lang"
+	COOKIE_LANG_ID   = "lang"
 	NOT_FOUND_PAGE	 = "404.html"
 )
 
@@ -29,7 +31,7 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 
 /*
  * Detect languages available on the server (all directories at ROOT_PATH with
- * the ISO-639 (2 letter only)
+ * the ISO-639 (2 letter only))
  */
 func serverLanguageAvailable() {
 	languageMap = make(map[string]bool)
@@ -52,7 +54,28 @@ func serverLanguageAvailable() {
 }
 
 /*
- * Detect the best language for the user.
+ * Read a cookie with the lang attribute.
+ */
+func readCookie(r *http.Request) string {
+	cookie,err := r.Cookie(COOKIE_NAME);
+	if (err != nil) {
+		return "";
+	}
+	language := "";
+	cookieVal := strings.Split(cookie.String(), ";");
+	for i := 0; i < len(cookieVal); i++ {
+		if strings.Contains(cookieVal[i], COOKIE_LANG_ID) {
+			langArray := strings.Split(cookieVal[i], "=");
+			language = langArray[1]
+		}
+	}
+	return language;
+
+}
+
+/*
+ * Detect the best language for the user (cookie first, Accept-Language
+ * otherwise).
  */
 func detectLanguage(r *http.Request) string {
 	header := r.Header
@@ -71,8 +94,13 @@ func detectLanguage(r *http.Request) string {
 }
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	language := detectLanguage(r)
-	http.Redirect(w, r, r.URL.Path + language + "/", http.StatusFound)
+	language := readCookie(r)
+	if language != "" {
+		http.Redirect(w, r, r.URL.Path + language + "/", http.StatusFound)
+	}  else {
+		language := detectLanguage(r)
+		http.Redirect(w, r, r.URL.Path + language + "/", http.StatusFound)
+	}
 }
 
 func languageHandler(w http.ResponseWriter, r *http.Request) {
