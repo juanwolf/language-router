@@ -24,11 +24,6 @@ const (
 // Language available
 var languageMap map[string]bool
 
-func notFoundHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r,
-					ROOT_PATH + "/" + detectLanguage(r) + "/" + NOT_FOUND_PAGE)
-}
-
 /*
  * Detect languages available on the server (all directories at ROOT_PATH with
  * the ISO-639 (2 letter only))
@@ -70,14 +65,12 @@ func readCookie(r *http.Request) string {
 		}
 	}
 	return language;
-
 }
 
-/*
- * Detect the best language for the user (cookie first, Accept-Language
- * otherwise).
+/**
+ * Read the HTTP Header and choose the preferred language if exists.
  */
-func detectLanguage(r *http.Request) string {
+func detectLanguageFromHTTPHeader(r *http.Request) string {
 	header := r.Header
 	languagesRequest := header.Get("Accept-Language")
 	fmt.Println("Accept-Language: ", languagesRequest)
@@ -92,15 +85,28 @@ func detectLanguage(r *http.Request) string {
 	}
 	return LANG_DEFAULT
 }
+/*
+ * Detect the best language for the user (cookie first, Accept-Language
+ * otherwise).
+ */
+func detectLanguage(r *http.Request) string {
+	cookieResult := readCookie(r);
+	if cookieResult != "" {
+		return cookieResult;
+	} else {
+		return detectLanguageFromHTTPHeader(r);
+	}
+
+}
+
+func notFoundHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r,
+					ROOT_PATH + "/" + detectLanguage(r) + "/" + NOT_FOUND_PAGE)
+}
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	language := readCookie(r)
-	if language != "" {
-		http.Redirect(w, r, r.URL.Path + language + "/", http.StatusFound)
-	}  else {
 		language := detectLanguage(r)
 		http.Redirect(w, r, r.URL.Path + language + "/", http.StatusFound)
-	}
 }
 
 func languageHandler(w http.ResponseWriter, r *http.Request) {
