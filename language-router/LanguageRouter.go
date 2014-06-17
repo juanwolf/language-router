@@ -131,6 +131,16 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func aboutHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	langAsked := vars["lang"]
+	fmt.Println("Finding the about in " + langAsked)
+	if languageMap[langAsked] {
+		http.ServeFile(w, r, ROOT_PATH + "/" + langAsked + "/about.html")
+	} else {
+		notFoundHandler(w, r)
+	}
+}
 func main() {
 	serverLanguageAvailable()
 	// Router settings
@@ -139,9 +149,14 @@ func main() {
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 
 	// Subrouter section
-	subrouter := router.Host("resume." + HOST).Subrouter()
-	subrouter.HandleFunc("/", rootHandler)
-	subrouter.HandleFunc("/{lang}/", resumeHandler)
+	subrouter_resume := router.Host("resume." + HOST).Subrouter()
+	subrouter_resume.HandleFunc("/", rootHandler)
+	subrouter_resume.HandleFunc("/{lang}/", resumeHandler)
+
+	//Subrouter about section
+	subrouter_about := router.Host("about." + HOST).Subrouter()
+	subrouter_about.HandleFunc("/", rootHandler)
+	subrouter_about.HandleFunc("/{lang}/", resumeHandler)
 
 	// Router section
 	router.HandleFunc("/", rootHandler)
