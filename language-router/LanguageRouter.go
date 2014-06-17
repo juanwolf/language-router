@@ -54,17 +54,18 @@ func serverLanguageAvailable() {
 func readCookie(r *http.Request) string {
 	cookie,err := r.Cookie(COOKIE_NAME);
 	if (err != nil) {
-		return "";
+		return ""
 	}
-	language := "";
+	language := ""
 	cookieVal := strings.Split(cookie.String(), ";");
 	for i := 0; i < len(cookieVal); i++ {
 		if strings.Contains(cookieVal[i], COOKIE_LANG_ID) {
-			langArray := strings.Split(cookieVal[i], "=");
+			langArray := strings.Split(cookieVal[i], "=")
 			language = langArray[1]
 		}
 	}
-	return language;
+	fmt.Println("Language cookie detected=" + language)
+	return language
 }
 
 /**
@@ -90,11 +91,11 @@ func detectLanguageFromHTTPHeader(r *http.Request) string {
  * otherwise).
  */
 func detectLanguage(r *http.Request) string {
-	cookieResult := readCookie(r);
+	cookieResult := readCookie(r)
 	if cookieResult != "" {
-		return cookieResult;
+		return cookieResult
 	} else {
-		return detectLanguageFromHTTPHeader(r);
+		return detectLanguageFromHTTPHeader(r)
 	}
 
 }
