@@ -156,7 +156,7 @@ func main() {
 	//Subrouter about section
 	subrouter_about := router.Host("about." + HOST).Subrouter()
 	subrouter_about.HandleFunc("/", rootHandler)
-	subrouter_about.HandleFunc("/{lang}/", resumeHandler)
+	subrouter_about.HandleFunc("/{lang}/", aboutHandler)
 
 	// Router section
 	router.HandleFunc("/", rootHandler)
