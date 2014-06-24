@@ -131,6 +131,17 @@ func resumeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func chatHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	langAsked := vars["lang"]
+	fmt.Println("Finding the chat in " + langAsked)
+	if languageMap[langAsked] {
+		http.ServeFile(w, r, ROOT_PATH + "/" + langAsked + "/chat.html")
+	} else {
+		notFoundHandler(w, r)
+	}
+}
+
 func aboutHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	langAsked := vars["lang"]
@@ -148,7 +159,7 @@ func main() {
 	router.Host(HOST).Schemes("http")
 	router.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 
-	// Subrouter section
+	// Subrouter resume section
 	subrouter_resume := router.Host("resume." + HOST).Subrouter()
 	subrouter_resume.HandleFunc("/", rootHandler)
 	subrouter_resume.HandleFunc("/{lang}/", resumeHandler)
@@ -157,6 +168,11 @@ func main() {
 	subrouter_about := router.Host("about." + HOST).Subrouter()
 	subrouter_about.HandleFunc("/", rootHandler)
 	subrouter_about.HandleFunc("/{lang}/", aboutHandler)
+
+	// Subrouter chat section
+	subrouter_chat := router.Host("chat." + HOST).Subrouter()
+	subrouter_chat.HandleFunc("/", rootHandler)
+	subrouter_chat.HandleFunc("/{lang}/", chatHandler)
 
 	// Router section
 	router.HandleFunc("/", rootHandler)
@@ -177,3 +193,4 @@ func main() {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
+
