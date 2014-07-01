@@ -152,6 +152,18 @@ func aboutHandler(w http.ResponseWriter, r *http.Request) {
 		notFoundHandler(w, r)
 	}
 }
+
+func didItHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	langAsked := vars["lang"]
+	fmt.Println("Finding the workinprogress in " + langAsked)
+	if languageMap[langAsked] {
+		http.ServeFile(w, r, ROOT_PATH + "/" + langAsked + "/workinprogress.html")
+	} else {
+		notFoundHandler(w, r)
+	}
+}
+
 func main() {
 	serverLanguageAvailable()
 	// Router settings
@@ -173,6 +185,11 @@ func main() {
 	subrouter_chat := router.Host("chat." + HOST).Subrouter()
 	subrouter_chat.HandleFunc("/", rootHandler)
 	subrouter_chat.HandleFunc("/{lang}/", chatHandler)
+
+	// Subrouter Did It section
+	subrouter_did_it := router.Host("didit." + HOST).Subrouter()
+	subrouter_did_it.HandleFunc("/", rootHandler)
+	subrouter_did_it.HandleFunc("/{lang}/", didItHandler)
 
 	// Router section
 	router.HandleFunc("/", rootHandler)
